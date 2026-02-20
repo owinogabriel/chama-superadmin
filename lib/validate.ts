@@ -3,7 +3,7 @@ export const validateSignIn = (data: { email: string; password: string }) => {
 
   if (!data.email) {
     errors.email = "Email is required.";
-  } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(data.email)) {
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
     errors.email = "Invalid email address.";
   }
 
