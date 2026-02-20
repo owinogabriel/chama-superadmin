@@ -109,7 +109,6 @@ export const LoginForm = () => {
                   setEmail(e.target.value);
                   setErrors((prev) => ({ ...prev, email: undefined }));
                   setServerError(null);
-                  setServerError(null);
                 }}
                 required
               />
