@@ -1,1 +1,0 @@
-export { CreateUserPage as default } from "@/components/users-pages"

@@ -1,29 +1,84 @@
 'use client'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
-import { Profile } from '@/types/Database'
+import { Profile, UserStatus } from '@/types/Database'
 
-const getUser = async (): Promise<Profile> => {
+// ── Types ──────────────────────────────────────────────────
+export type ProfileWithChama = Profile & {
+  chamas: {
+    name: string
+    contribution_amount: number
+    contribution_frequency: string
+  } | null
+}
+
+// ── Current logged-in user ─────────────────────────────────
+const getUser = async (): Promise<ProfileWithChama> => {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-
   if (authError || !user) throw new Error('Not authenticated')
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('*')
+    .select(`
+      *,
+      chamas!profiles_chama_id_fkey (
+        name,
+        contribution_amount,
+        contribution_frequency
+      )
+    `)
     .eq('id', user.id)
     .single()
 
   if (profileError) throw new Error(profileError.message)
-
-  return profile as Profile
+  return profile as ProfileWithChama
 }
 
 export const useUser = () => {
-  return useQuery<Profile>({
+  return useQuery<ProfileWithChama>({
     queryKey: ['user'],
     queryFn: getUser,
     retry: false,
     staleTime: 1000 * 60 * 5,
+  })
+}
+
+// ── All platform users (super admin only) ──────────────────
+export const useUsers = () => {
+  return useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          *,
+          chamas!profiles_chama_id_fkey (
+            name,
+            contribution_amount,
+            contribution_frequency
+          )
+        `)
+        .order('created_at', { ascending: false })
+
+      if (error) throw new Error(error.message)
+      return data as ProfileWithChama[]
+    },
+  })
+}
+
+// ── Toggle user active/suspended ───────────────────────────
+export const useToggleUserStatus = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: UserStatus }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status })
+        .eq('id', id)
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+    },
   })
 }

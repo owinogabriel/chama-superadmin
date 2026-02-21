@@ -1,89 +1,58 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowLeft,
-  Users,
-  TrendingUp,
-  CreditCard,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  MoreHorizontal,
-  Mail,
-  Phone,
-  Calendar,
-  Building2,
-  Ban,
-  RefreshCw,
+  ArrowLeft, Users, TrendingUp, CreditCard, CheckCircle2,
+  XCircle, Clock, MoreHorizontal, Mail, Phone, Calendar,
+  Building2, Ban, RefreshCw,
 } from "lucide-react";
+import { useChama, useToggleChamaStatus } from "@/hooks/useChama";
 
-// ── Dummy Data ─────────────────────────────────────────────
-const chama = {
-  id: "1",
-  name: "Umoja Investment Group",
-  description:
-    "A vibrant investment group focused on real estate and government bonds for long-term wealth creation.",
-  status: "active",
-  plan: "Pro",
-  contribution: 5000,
-  frequency: "Monthly",
-  meetingDay: "Saturday",
-  totalSaved: 840000,
-  created: "Feb 14, 2026",
-  admin: {
-    name: "Grace Wanjiku",
-    email: "grace@umoja.co.ke",
-    phone: "0712 345 678",
-    status: "active",
-    joinedAt: "Feb 14, 2026",
-  },
-  stats: {
-    totalMembers: 24,
-    activeMembers: 22,
-    totalContributions: 840000,
-    pendingContributions: 3,
-    activeLoans: 5,
-    totalLoanAmount: 150000,
-  },
-  members: [
-    { id: 1, name: "Grace Wanjiku", phone: "0712 345 678", role: "admin", status: "active", contributed: "KES 60,000", loans: 0 },
-    { id: 2, name: "John Kamau", phone: "0723 456 789", role: "member", status: "active", contributed: "KES 60,000", loans: 1 },
-    { id: 3, name: "Beatrice Otieno", phone: "0734 567 890", role: "member", status: "active", contributed: "KES 55,000", loans: 0 },
-    { id: 4, name: "Samuel Mwangi", phone: "0745 678 901", role: "member", status: "active", contributed: "KES 60,000", loans: 2 },
-    { id: 5, name: "Fatuma Ali", phone: "0756 789 012", role: "member", status: "suspended", contributed: "KES 30,000", loans: 0 },
-    { id: 6, name: "Peter Njoroge", phone: "0767 890 123", role: "member", status: "active", contributed: "KES 60,000", loans: 1 },
-  ],
-  recentContributions: [
-    { id: 1, member: "John Kamau", amount: "KES 5,000", month: "Feb 2026", status: "paid", date: "Feb 1, 2026" },
-    { id: 2, member: "Beatrice Otieno", amount: "KES 5,000", month: "Feb 2026", status: "paid", date: "Feb 2, 2026" },
-    { id: 3, member: "Samuel Mwangi", amount: "KES 5,000", month: "Feb 2026", status: "pending", date: "—" },
-    { id: 4, member: "Fatuma Ali", amount: "KES 5,000", month: "Feb 2026", status: "late", date: "—" },
-    { id: 5, member: "Peter Njoroge", amount: "KES 5,000", month: "Feb 2026", status: "paid", date: "Feb 3, 2026" },
-  ],
-};
-
-// ── Helpers ────────────────────────────────────────────────
 const statusConfig: Record<string, { label: string; icon: React.ElementType; class: string }> = {
   active: { label: "Active", icon: CheckCircle2, class: "text-emerald-400 bg-emerald-500/10" },
   suspended: { label: "Suspended", icon: XCircle, class: "text-red-400 bg-red-500/10" },
   pending: { label: "Pending", icon: Clock, class: "text-amber-400 bg-amber-500/10" },
-  paid: { label: "Paid", icon: CheckCircle2, class: "text-emerald-400 bg-emerald-500/10" },
-  late: { label: "Late", icon: XCircle, class: "text-red-400 bg-red-500/10" },
 };
 
-const tabs = ["Overview", "Members", "Contributions"];
+const tabs = ["Overview", "Members"];
 
-// ── Component ──────────────────────────────────────────────
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" });
+
 export default function ChamaDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const { data: chama, isLoading, error } = useChama(id);
+  const { mutate: toggleStatus, isPending: isToggling } = useToggleChamaStatus();
   const [activeTab, setActiveTab] = useState("Overview");
-  const [chamaStatus, setChamaStatus] = useState(chama.status);
 
-  const s = statusConfig[chamaStatus];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0a0c10] flex items-center justify-center">
+        <div className="w-6 h-6 rounded-full border-2 border-white/20 border-t-emerald-400 animate-spin" />
+      </div>
+    );
+  }
 
-  const handleToggleSuspend = () => {
-    setChamaStatus((prev) => (prev === "active" ? "suspended" : "active"));
+  if (error || !chama) {
+    return (
+      <div className="min-h-screen bg-[#0a0c10] flex items-center justify-center">
+        <p className="text-red-400 text-sm">{error?.message ?? "Chama not found"}</p>
+      </div>
+    );
+  }
+
+  const chamaStatus = (chama as any).status ?? "active";
+  const s = statusConfig[chamaStatus] ?? statusConfig.active;
+  const members = chama.chama_members ?? [];
+  const activeMembers = members.filter((m) => m.status === "active").length;
+
+  const handleToggle = () => {
+    toggleStatus({
+      id: chama.id,
+      status: chamaStatus === "active" ? "suspended" : "active",
+    });
   };
 
   return (
@@ -113,23 +82,26 @@ export default function ChamaDetailPage() {
                 <s.icon size={11} />
                 {s.label}
               </span>
-              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                chama.plan === "Pro"
+              <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${
+                chama.plan === "pro"
                   ? "bg-violet-500/10 text-violet-400"
                   : "bg-white/5 text-white/40"
               }`}>
                 {chama.plan}
               </span>
             </div>
-            <p className="text-white/40 text-sm mt-1 max-w-xl">{chama.description}</p>
+            {chama.description && (
+              <p className="text-white/40 text-sm mt-1 max-w-xl">{chama.description}</p>
+            )}
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={handleToggleSuspend}
-            className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl border transition-colors ${
+            onClick={handleToggle}
+            disabled={isToggling}
+            className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl border transition-colors disabled:opacity-50 ${
               chamaStatus === "active"
                 ? "border-red-500/30 text-red-400 hover:bg-red-500/10"
                 : "border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
@@ -147,58 +119,50 @@ export default function ChamaDetailPage() {
         </div>
       </div>
 
-      {/* Stats Row */}
+      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           {
             label: "Total Members",
-            value: chama.stats.totalMembers,
-            sub: `${chama.stats.activeMembers} active`,
+            value: members.length,
+            sub: `${activeMembers} active`,
             icon: Users,
             color: "sky",
           },
           {
-            label: "Total Saved",
-            value: `KES ${chama.stats.totalContributions.toLocaleString()}`,
-            sub: `${chama.stats.pendingContributions} pending`,
+            label: "Contribution",
+            value: `KES ${chama.contribution_amount.toLocaleString()}`,
+            sub: chama.contribution_frequency,
             icon: TrendingUp,
             color: "emerald",
           },
           {
-            label: "Active Loans",
-            value: chama.stats.activeLoans,
-            sub: `KES ${chama.stats.totalLoanAmount.toLocaleString()} out`,
-            icon: CreditCard,
-            color: "violet",
-          },
-          {
-            label: "Contribution",
-            value: `KES ${chama.contribution.toLocaleString()}`,
-            sub: chama.frequency,
+            label: "Meeting Day",
+            value: chama.meeting_day ?? "—",
+            sub: "Default day",
             icon: Calendar,
             color: "amber",
           },
+          {
+            label: "Plan",
+            value: chama.plan.toUpperCase(),
+            sub: `Since ${formatDate(chama.created_at)}`,
+            icon: CreditCard,
+            color: "violet",
+          },
         ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-4"
-          >
-            <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${
-                stat.color === "sky"
-                  ? "bg-sky-500/10 text-sky-400"
-                  : stat.color === "emerald"
-                  ? "bg-emerald-500/10 text-emerald-400"
-                  : stat.color === "violet"
-                  ? "bg-violet-500/10 text-violet-400"
-                  : "bg-amber-500/10 text-amber-400"
-              }`}
-            >
+          <div key={stat.label} className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-4">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${
+              stat.color === "sky" ? "bg-sky-500/10 text-sky-400"
+              : stat.color === "emerald" ? "bg-emerald-500/10 text-emerald-400"
+              : stat.color === "violet" ? "bg-violet-500/10 text-violet-400"
+              : "bg-amber-500/10 text-amber-400"
+            }`}>
               <stat.icon size={15} />
             </div>
-            <p className="text-white text-xl font-semibold">{stat.value}</p>
+            <p className="text-white text-xl font-semibold capitalize">{stat.value}</p>
             <p className="text-white/40 text-xs mt-0.5">{stat.label}</p>
-            <p className="text-white/25 text-xs mt-0.5">{stat.sub}</p>
+            <p className="text-white/25 text-xs mt-0.5 capitalize">{stat.sub}</p>
           </div>
         ))}
       </div>
@@ -220,7 +184,7 @@ export default function ChamaDetailPage() {
         ))}
       </div>
 
-      {/* ── Overview Tab ── */}
+      {/* Overview Tab */}
       {activeTab === "Overview" && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
@@ -233,18 +197,17 @@ export default function ChamaDetailPage() {
             <div className="space-y-1">
               {[
                 { label: "Chama Name", value: chama.name },
-                { label: "Plan", value: chama.plan },
-                { label: "Contribution", value: `KES ${chama.contribution.toLocaleString()} / ${chama.frequency}` },
-                { label: "Meeting Day", value: chama.meetingDay },
-                { label: "Created", value: chama.created },
-                { label: "Total Saved", value: `KES ${chama.totalSaved.toLocaleString()}` },
+                { label: "Plan", value: chama.plan.toUpperCase() },
+                { label: "Contribution", value: `KES ${chama.contribution_amount.toLocaleString()} / ${chama.contribution_frequency}` },
+                { label: "Meeting Day", value: chama.meeting_day ?? "—" },
+                { label: "Created", value: formatDate(chama.created_at) },
               ].map((row) => (
                 <div
                   key={row.label}
                   className="flex items-center justify-between py-3 border-b border-white/[0.04] last:border-0"
                 >
                   <span className="text-white/40 text-sm">{row.label}</span>
-                  <span className="text-white/80 text-sm font-medium">{row.value}</span>
+                  <span className="text-white/80 text-sm font-medium capitalize">{row.value}</span>
                 </div>
               ))}
             </div>
@@ -260,29 +223,28 @@ export default function ChamaDetailPage() {
             <div className="flex items-center gap-4 p-4 bg-white/[0.03] rounded-xl border border-white/[0.06] mb-5">
               <div className="w-10 h-10 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
                 <span className="text-sky-400 text-sm font-bold uppercase">
-                  {chama.admin.name.charAt(0)}
+                  {chama.profiles?.full_name?.charAt(0) ?? "?"}
                 </span>
               </div>
               <div>
-                <p className="text-white text-sm font-medium">{chama.admin.name}</p>
+                <p className="text-white text-sm font-medium">{chama.profiles?.full_name ?? "—"}</p>
                 <p className="text-white/40 text-xs mt-0.5">Chama Admin</p>
               </div>
-              <span className={`ml-auto flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${statusConfig[chama.admin.status].class}`}>
-                <CheckCircle2 size={10} />
-                {statusConfig[chama.admin.status].label}
-              </span>
+              {chama.profiles?.status && (
+                <span className={`ml-auto flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${statusConfig[chama.profiles.status]?.class}`}>
+                  <CheckCircle2 size={10} />
+                  {statusConfig[chama.profiles.status]?.label}
+                </span>
+              )}
             </div>
 
             <div className="space-y-1">
               {[
-                { icon: Mail, label: "Email", value: chama.admin.email },
-                { icon: Phone, label: "Phone", value: chama.admin.phone },
-                { icon: Calendar, label: "Joined", value: chama.admin.joinedAt },
+                { icon: Mail, label: "Email", value: chama.profiles?.email ?? "—" },
+                { icon: Phone, label: "Phone", value: chama.profiles?.phone_number ?? "—" },
+                { icon: Calendar, label: "Joined", value: (chama.profiles as any)?.created_at ? formatDate((chama.profiles as any).created_at) : "—" },
               ].map((row) => (
-                <div
-                  key={row.label}
-                  className="flex items-center gap-3 py-3 border-b border-white/[0.04] last:border-0"
-                >
+                <div key={row.label} className="flex items-center gap-3 py-3 border-b border-white/[0.04] last:border-0">
                   <row.icon size={14} className="text-white/25 shrink-0" />
                   <span className="text-white/40 text-sm w-14">{row.label}</span>
                   <span className="text-white/70 text-sm">{row.value}</span>
@@ -293,119 +255,66 @@ export default function ChamaDetailPage() {
         </div>
       )}
 
-      {/* ── Members Tab ── */}
+      {/* Members Tab */}
       {activeTab === "Members" && (
         <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07]">
-            <h2 className="text-sm font-medium text-white">
-              Members ({chama.members.length})
-            </h2>
+            <h2 className="text-sm font-medium text-white">Members ({members.length})</h2>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/[0.05]">
-                  {["Member", "Phone", "Role", "Contributed", "Loans", "Status"].map((h) => (
-                    <th key={h} className="text-left px-5 py-3 text-white/30 text-xs font-medium">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {chama.members.map((member, i) => {
-                  const ms = statusConfig[member.status];
-                  return (
-                    <tr
-                      key={member.id}
-                      className={`border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors ${
-                        i === chama.members.length - 1 ? "border-0" : ""
-                      }`}
-                    >
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center shrink-0">
-                            <span className="text-white/50 text-xs font-bold uppercase">
-                              {member.name.charAt(0)}
-                            </span>
+          {members.length === 0 ? (
+            <div className="py-16 text-center text-white/30 text-sm">No members yet</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/[0.05]">
+                    {["Member", "Phone", "Role", "Status", "Joined"].map((h) => (
+                      <th key={h} className="text-left px-5 py-3 text-white/30 text-xs font-medium">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {members.map((member, i) => {
+                    const ms = statusConfig[member.status] ?? statusConfig.active;
+                    return (
+                      <tr
+                        key={member.id}
+                        className={`border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors ${
+                          i === members.length - 1 ? "border-0" : ""
+                        }`}
+                      >
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+                              <span className="text-white/50 text-xs font-bold uppercase">
+                                {member.profiles?.full_name?.charAt(0) ?? "?"}
+                              </span>
+                            </div>
+                            <span className="text-white text-sm">{member.profiles?.full_name ?? "—"}</span>
                           </div>
-                          <span className="text-white text-sm">{member.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3.5 text-white/50 text-sm">{member.phone}</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${
-                          member.role === "admin"
-                            ? "bg-sky-500/10 text-sky-400"
-                            : "bg-white/5 text-white/40"
-                        }`}>
-                          {member.role}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-white/60 text-sm">{member.contributed}</td>
-                      <td className="px-5 py-3.5 text-white/50 text-sm">{member.loans}</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full w-fit font-medium ${ms.class}`}>
-                          <ms.icon size={10} />
-                          {ms.label}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ── Contributions Tab ── */}
-      {activeTab === "Contributions" && (
-        <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07]">
-            <h2 className="text-sm font-medium text-white">Recent Contributions</h2>
-            <span className="text-white/30 text-xs">
-              {chama.recentContributions.filter((c) => c.status === "paid").length} of{" "}
-              {chama.recentContributions.length} paid this month
-            </span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/[0.05]">
-                  {["Member", "Amount", "Month", "Date Paid", "Status"].map((h) => (
-                    <th key={h} className="text-left px-5 py-3 text-white/30 text-xs font-medium">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {chama.recentContributions.map((c, i) => {
-                  const cs = statusConfig[c.status];
-                  return (
-                    <tr
-                      key={c.id}
-                      className={`border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors ${
-                        i === chama.recentContributions.length - 1 ? "border-0" : ""
-                      }`}
-                    >
-                      <td className="px-5 py-3.5 text-white text-sm">{c.member}</td>
-                      <td className="px-5 py-3.5 text-white/70 text-sm">{c.amount}</td>
-                      <td className="px-5 py-3.5 text-white/50 text-sm">{c.month}</td>
-                      <td className="px-5 py-3.5 text-white/40 text-sm">{c.date}</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full w-fit font-medium ${cs.class}`}>
-                          <cs.icon size={10} />
-                          {cs.label}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        </td>
+                        <td className="px-5 py-3.5 text-white/50 text-sm">{member.profiles?.phone_number ?? "—"}</td>
+                        <td className="px-5 py-3.5">
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${
+                            member.role === "admin" ? "bg-sky-500/10 text-sky-400" : "bg-white/5 text-white/40"
+                          }`}>
+                            {member.role}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <span className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full w-fit font-medium ${ms.class}`}>
+                            <ms.icon size={10} />
+                            {ms.label}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 text-white/40 text-sm">{formatDate(member.joined_at)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>

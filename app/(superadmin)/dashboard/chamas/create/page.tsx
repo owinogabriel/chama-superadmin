@@ -14,6 +14,7 @@ import {
   ChevronDown,
   CheckCircle2,
 } from "lucide-react";
+import { useCreateChama } from "@/hooks/useCreateChama";
 
 interface FormData {
   chamaName: string;
@@ -49,13 +50,13 @@ const plans = [
   {
     id: "basic",
     label: "Basic",
-    price: "KES 500/mo",
+    price: "KES 5000/mo",
     features: ["Up to 20 members", "Contributions tracking", "Basic reports"],
   },
   {
     id: "pro",
     label: "Pro",
-    price: "KES 1,500/mo",
+    price: "KES 10000/mo",
     features: [
       "Unlimited members",
       "Loan management",
@@ -70,6 +71,8 @@ export default function CreateChamaPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const { mutateAsync: createChama, isPending } = useCreateChama();
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const [form, setForm] = useState<FormData>({
     chamaName: "",
@@ -109,12 +112,17 @@ export default function CreateChamaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    setLoading(true);
-    // simulate API call
-    await new Promise((res) => setTimeout(res, 1500));
-    setLoading(false);
-    setSuccess(true);
-    setTimeout(() => router.push("/dashboard/chamas"), 2000);
+    setServerError(null);
+
+    try {
+      await createChama(form);
+      setSuccess(true);
+      setTimeout(() => router.push("/dashboard/chamas"), 2000);
+    } catch (err) {
+      setServerError(
+        err instanceof Error ? err.message : "Something went wrong",
+      );
+    }
   };
 
   if (success) {
@@ -224,7 +232,7 @@ export default function CreateChamaPage() {
                       />
                       <input
                         type="number"
-                        placeholder="5000"
+                        placeholder="500"
                         value={form.contributionAmount}
                         onChange={(e) =>
                           update("contributionAmount", e.target.value)
@@ -491,10 +499,17 @@ export default function CreateChamaPage() {
                 </p>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={isPending}
                   className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded-xl transition-colors"
                 >
-                  {loading ? "Creating Chama..." : "Create Chama"}
+                  {isPending ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                      Creating Chama...
+                    </span>
+                  ) : (
+                    "Create Chama"
+                  )}
                 </button>
                 <Link
                   href="/dashboard/chamas"
@@ -502,6 +517,11 @@ export default function CreateChamaPage() {
                 >
                   Cancel
                 </Link>
+                {serverError && (
+                  <div className="mt-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                    <p className="text-red-400 text-xs">{serverError}</p>
+                  </div>
+                )}
               </div>
             </section>
           </div>
