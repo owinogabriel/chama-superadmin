@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -12,31 +12,16 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Menu,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 const navItems = [
-  {
-    label: "Overview",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    exact: true,
-  },
-  {
-    label: "Chamas",
-    href: "/dashboard/chamas",
-    icon: Building2,
-    exact: false,
-  },
-  {
-    label: "Users",
-    href: "/dashboard/users",
-    icon: Users,
-    exact: false,
-  },
+  { label: "Overview", href: "/dashboard", icon: LayoutDashboard, exact: true },
+  { label: "Chamas", href: "/dashboard/chamas", icon: Building2, exact: false },
+  { label: "Users", href: "/dashboard/users", icon: Users, exact: false },
   {
     label: "Subscriptions",
     href: "/dashboard/subscriptions",
@@ -55,8 +40,23 @@ export const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { data: user } = useUser();
+  const { data: settings } = usePlatformSettings();
   const [collapsed, setCollapsed] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  // Collapse by default on mobile
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    setCollapsed(isMobile);
+
+    const handleResize = () => {
+      setCollapsed(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const platformName = settings?.platform_name ?? "ChamaAdmin";
 
   const isActive = (href: string, exact: boolean) => {
     if (exact) return pathname === href;
@@ -71,7 +71,6 @@ export const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile overlay - sidebar hidden on mobile, shown via toggle */}
       <aside
         className={`
           fixed top-0 left-0 h-full z-50 flex flex-col
@@ -85,29 +84,32 @@ export const Sidebar = () => {
           {!collapsed && (
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
+                <span className="text-white font-bold text-sm">
+                  {platformName.charAt(0)}
+                </span>
               </div>
-              <span className="text-white font-semibold text-sm tracking-wide">
-                ChamaAdmin
+              <span className="text-white font-semibold text-sm tracking-wide truncate max-w-[140px]">
+                {platformName}
               </span>
             </div>
           )}
           {collapsed && (
             <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center mx-auto">
-              <span className="text-white font-bold text-sm">C</span>
+              <span className="text-white font-bold text-sm">
+                {platformName.charAt(0)}
+              </span>
             </div>
           )}
-          <button
-            onClick={() => setCollapsed((prev) => !prev)}
-            className={`text-white/40 hover:text-white transition-colors ${
-              collapsed ? "hidden" : "block"
-            }`}
-          >
-            <ChevronLeft size={18} />
-          </button>
+          {!collapsed && (
+            <button
+              onClick={() => setCollapsed(true)}
+              className="text-white/40 hover:text-white transition-colors"
+            >
+              <ChevronLeft size={18} />
+            </button>
+          )}
         </div>
 
-        {/* Collapse toggle when collapsed */}
         {collapsed && (
           <button
             onClick={() => setCollapsed(false)}
@@ -128,24 +130,15 @@ export const Sidebar = () => {
                 className={`
                   flex items-center gap-3 px-3 py-2.5 rounded-lg
                   text-sm font-medium transition-all duration-150 group
-                  ${
-                    active
-                      ? "bg-emerald-500/15 text-emerald-400"
-                      : "text-white/50 hover:text-white hover:bg-white/5"
-                  }
+                  ${active ? "bg-emerald-500/15 text-emerald-400" : "text-white/50 hover:text-white hover:bg-white/5"}
                   ${collapsed ? "justify-center" : ""}
                 `}
               >
                 <item.icon
                   size={18}
-                  className={`shrink-0 ${
-                    active ? "text-emerald-400" : "text-white/40 group-hover:text-white"
-                  }`}
+                  className={`shrink-0 ${active ? "text-emerald-400" : "text-white/40 group-hover:text-white"}`}
                 />
-                {!collapsed && (
-                  <span>{item.label}</span>
-                )}
-                {/* Active indicator */}
+                {!collapsed && <span>{item.label}</span>}
                 {active && !collapsed && (
                   <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 )}
@@ -156,7 +149,6 @@ export const Sidebar = () => {
 
         {/* User + Logout */}
         <div className="px-3 py-4 border-t border-white/10 space-y-2">
-          {/* User info */}
           {!collapsed && user && (
             <div className="flex items-center gap-3 px-3 py-2">
               <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
@@ -173,7 +165,6 @@ export const Sidebar = () => {
             </div>
           )}
 
-          {/* Logout button */}
           <button
             onClick={handleLogout}
             disabled={loggingOut}
@@ -192,11 +183,8 @@ export const Sidebar = () => {
         </div>
       </aside>
 
-      {/* Main content offset */}
       <div
-        className={`transition-all duration-300 ${
-          collapsed ? "ml-[72px]" : "ml-[240px]"
-        }`}
+        className={`transition-all duration-300 ${collapsed ? "ml-[72px]" : "ml-[240px]"}`}
       />
     </>
   );
