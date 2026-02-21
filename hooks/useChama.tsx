@@ -1,26 +1,17 @@
 "use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
-import { Chama, ChamaMember, Profile, Database } from "@/types/Database";
+import type { Chama, ChamaMember, Profile, Database, ChamaStatus } from "@/types/Database";
 
 export type ChamaWithAdmin = Chama & {
-  profiles: Pick<
-    Profile,
-    "full_name" | "email" | "phone_number" | "status"
-  > | null;
+  profiles: Pick<Profile, "full_name" | "email" | "phone_number" | "status"> | null;
   chama_members: { count: number }[];
 };
 
 export type ChamaWithDetails = Chama & {
-  profiles: Pick<
-    Profile,
-    "full_name" | "email" | "phone_number" | "status" | "created_at"
-  > | null;
+  profiles: Pick<Profile, "full_name" | "email" | "phone_number" | "status" | "created_at"> | null;
   chama_members: (ChamaMember & {
-    profiles: Pick<
-      Profile,
-      "id" | "full_name" | "phone_number" | "status"
-    > | null;
+    profiles: Pick<Profile, "id" | "full_name" | "phone_number" | "status"> | null;
   })[];
 };
 
@@ -40,7 +31,7 @@ export const useChamas = () => {
             status
           ),
           chama_members (count)
-        `,
+        `
         )
         .order("created_at", { ascending: false });
 
@@ -79,7 +70,7 @@ export const useChama = (id: string) => {
               status
             )
           )
-        `,
+        `
         )
         .eq("id", id)
         .single();
@@ -94,16 +85,10 @@ export const useChama = (id: string) => {
 export const useToggleChamaStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      id,
-      status,
-    }: {
-      id: string;
-      status: "active" | "suspended";
-    }) => {
+    mutationFn: async ({ id, status }: { id: string; status: ChamaStatus }) => {
       const { error } = await supabase
         .from("chamas")
-        .update({ status } as any)
+        .update({ status } as unknown as never)
         .eq("id", id);
       if (error) throw new Error(error.message);
     },

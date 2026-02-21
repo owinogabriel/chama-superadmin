@@ -22,7 +22,7 @@ const saveSettings = async (settings: Record<string, string>) => {
 
   const { error } = await supabase
     .from('platform_settings')
-    .upsert(rows, { onConflict: 'key' })
+    .upsert(rows as unknown as never[], { onConflict: 'key' })
 
   if (error) throw new Error(error.message)
 }

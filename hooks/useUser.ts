@@ -73,7 +73,7 @@ export const useToggleUserStatus = () => {
     mutationFn: async ({ id, status }: { id: string; status: UserStatus }) => {
       const { error } = await supabase
         .from('profiles')
-        .update({ status })
+        .update({ status } as unknown as never)
         .eq('id', id)
       if (error) throw new Error(error.message)
     },
