@@ -12,7 +12,7 @@ export type Profile = {
   role: UserRole
   chama_id: string | null
   temp_password: string | null
-  is_first_login: boolean
+  is_first_login?: boolean
   status: UserStatus
   avatar_url: string | null
   created_at: string
