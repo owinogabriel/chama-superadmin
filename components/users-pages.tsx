@@ -270,7 +270,9 @@ export function CreateUserPage() {
 
   const generatePassword = () => {
     const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#!";
-    return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const array = new Uint32Array(12);
+    crypto.getRandomValues(array);
+    return Array.from(array, (n) => chars[n % chars.length]).join("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
