@@ -51,15 +51,14 @@ export const LoginForm = () => {
   const [errors, setErrors] = useState<SignInErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const [toast, setToast] = useState<string | null>(null);
+  const router = useRouter();
+  const { refetch: refetchUser } = useUser();
 
   const showToast = (message: string) => {
     setToast(message);
     setTimeout(() => setToast(null), 3000);
   };
-
-  const { refetch: refetchUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,15 +93,15 @@ export const LoginForm = () => {
     }
 
     if (user.is_first_login) {
-    if (user.is_first_login) {
       setLoading(false);
-      router.push("/reset-password");
+      router.push("/first-login");
       return;
     }
 
     if (user.role === "super_admin") {
+      showToast("Signed in successfully!");
       setLoading(false);
-      router.push("/dashboard");
+      setTimeout(() => router.push("/dashboard"), 1000);
       return;
     }
 
@@ -114,12 +113,12 @@ export const LoginForm = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0c10] p-4">
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
-      {/* subtle background glow */}
+
+      {/* background glow */}
       <div className="absolute w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <Card className="w-full max-w-md relative">
         <CardHeader className="text-center pb-2">
-          {/* Logo mark */}
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
             <span className="text-emerald-400 font-bold text-lg">C</span>
           </div>
