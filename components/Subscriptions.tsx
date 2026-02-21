@@ -70,17 +70,17 @@ export  function SubscriptionsPage() {
   }, [chamas]);
 
   // derived stats
-  const totalRevenue = subscriptions.filter(s => s.status === "active").reduce((sum, s) => {
+  const activeSubs = subscriptions.filter((s) => s.status === "active");
+  const totalRevenue = activeSubs.reduce((sum, s) => {
     return sum + (s.plan === "Pro" ? 10000 : 5000);
   }, 0);
-  const activeCount = subscriptions.filter(s => s.status === "active").length;
-  const expiredCount = subscriptions.filter(s => s.status === "suspended").length;
-  const proCount = subscriptions.filter(s => s.plan === "Pro").length;
-  const basicCount = subscriptions.filter(s => s.plan === "Basic").length;
+  const activeCount = activeSubs.length;
+  const expiredCount = subscriptions.length - activeCount;
+  const proCount = activeSubs.filter((s) => s.plan === "Pro").length;
+  const basicCount = activeSubs.filter((s) => s.plan === "Basic").length;
   const proRevenue = proCount * 10000;
   const basicRevenue = basicCount * 5000;
   const totalPct = proCount + basicCount || 1;
-
   const filtered = subscriptions.filter((s) => {
     const matchSearch =
       s.chama.toLowerCase().includes(search.toLowerCase()) ||
