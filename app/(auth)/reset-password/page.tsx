@@ -56,18 +56,29 @@ export default function ResetPasswordPage({
   const strength = getStrength(newPassword);
 
   // For email reset links — supabase sets session from URL hash
- useEffect(() => {
-  if (isFirstLogin) return;
+  useEffect(() => {
+    if (isFirstLogin) return;
 
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-    if (event === "PASSWORD_RECOVERY") {
-      setSessionReady(true);
-    }
-  });
+    console.log("URL hash:", window.location.hash);
+    console.log("URL search:", window.location.search);
 
-  return () => subscription.unsubscribe();
-}, [isFirstLogin]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Session on load:", session);
+      if (session) setSessionReady(true);
+    });
 
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth event:", event, session);
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
+        setSessionReady(true);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [isFirstLogin]);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -346,4 +357,3 @@ export default function ResetPasswordPage({
     </div>
   );
 }
-
