@@ -94,21 +94,21 @@ export const LoginForm = () => {
     }
 
     if (user.is_first_login) {
+    if (user.is_first_login) {
+      setLoading(false);
       router.push("/reset-password");
       return;
     }
 
     if (user.role === "super_admin") {
-      showToast("Signed in successfully!");
-      router.push("/dashboard");
-    } else {
-      await supabase.auth.signOut();
-      setServerError("You are not authorized to access this portal.");
       setLoading(false);
+      router.push("/dashboard");
       return;
     }
 
-    router.refresh();
+    await supabase.auth.signOut();
+    setServerError("You are not authorized to access this portal.");
+    setLoading(false);
   };
 
   return (
