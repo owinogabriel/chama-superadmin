@@ -85,14 +85,19 @@ export  function SettingsPage() {
   };
 
   const handleGeneralSave = async () => {
-    await saveSettings({
-      platform_name: general.platformName,
-      support_email: general.supportEmail,
-      support_phone: general.supportPhone,
-      default_plan: general.defaultPlan.toLowerCase(),
-      trial_days: general.trialDays,
-    });
-    showSaved();
+    try {
+      await saveSettings({
+        platform_name: general.platformName,
+        support_email: general.supportEmail,
+        support_phone: general.supportPhone,
+        default_plan: general.defaultPlan.toLowerCase(),
+        trial_days: general.trialDays,
+      });
+      showSaved();
+    } catch (err) {
+      // Show error toast or set error state
+      console.error("Failed to save settings:", err);
+    }
   };
 
   const handleNotificationsSave = async () => {
