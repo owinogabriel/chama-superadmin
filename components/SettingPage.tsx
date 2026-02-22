@@ -22,9 +22,9 @@ export  function SettingsPage() {
   const { mutateAsync: saveSettings, isPending: saving } = useSaveSettings();
 
   const [general, setGeneral] = useState({
-    platformName: "ChamaAdmin",
-    supportEmail: "support@chamaadmin.co.ke",
-    supportPhone: "0800 123 456",
+    platformName: "ChamaVault",
+    supportEmail: "owinogabrieel@gmail.com",
+    supportPhone: "0740851719",
     defaultPlan: "Basic",
     trialDays: "14",
   });
@@ -56,7 +56,7 @@ export  function SettingsPage() {
   useEffect(() => {
     if (!settingsData) return;
     setGeneral({
-      platformName: settingsData.platform_name ?? "ChamaAdmin",
+      platformName: settingsData.platform_name ?? "ChamaVault",
       supportEmail: settingsData.support_email ?? "",
       supportPhone: settingsData.support_phone ?? "",
       defaultPlan: settingsData.default_plan === "pro" ? "Pro" : "Basic",
@@ -261,8 +261,8 @@ export  function SettingsPage() {
             <h2 className="text-sm font-medium text-white mb-5">Platform Settings</h2>
             <div className="space-y-5">
               {[
-                { label: "Platform Name", key: "platformName", placeholder: "ChamaAdmin" },
-                { label: "Support Email", key: "supportEmail", placeholder: "support@chamaadmin.co.ke" },
+                { label: "Platform Name", key: "platformName", placeholder: "ChamaVault" },
+                { label: "Support Email", key: "supportEmail", placeholder: "support@ChamaVault.co.ke" },
                 { label: "Support Phone", key: "supportPhone", placeholder: "0800 123 456" },
                 { label: "Trial Period (days)", key: "trialDays", placeholder: "14" },
               ].map((field) => (

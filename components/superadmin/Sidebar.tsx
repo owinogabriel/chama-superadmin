@@ -17,6 +17,7 @@ import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
+import { useQueryClient } from "@tanstack/react-query";
 
 const navItems = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard, exact: true },
@@ -43,6 +44,7 @@ export const Sidebar = () => {
   const { data: settings } = usePlatformSettings();
   const [collapsed, setCollapsed] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+   const queryClient = useQueryClient();
 
   // Collapse by default on mobile
   useEffect(() => {
@@ -56,16 +58,18 @@ export const Sidebar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const platformName = settings?.platform_name ?? "ChamaAdmin";
+  const platformName = settings?.platform_name ?? "ChamaVault";
 
   const isActive = (href: string, exact: boolean) => {
     if (exact) return pathname === href;
     return pathname.startsWith(href);
   };
 
-  const handleLogout = async () => {
+   const handleLogout = async () => {
     setLoggingOut(true);
     await supabase.auth.signOut();
+    queryClient.clear();
+    router.refresh();
     router.push("/login");
   };
 

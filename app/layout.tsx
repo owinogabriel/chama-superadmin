@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chama Admin Portal",
+  title: "Chama Vault Portal",
   description: "Chama management super admin portal",
 };
 
