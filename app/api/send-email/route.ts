@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { CredentialsEmail } from "@/components/emails/CredentialsEmail";
 import { createClient } from "@supabase/supabase-js";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,6 +10,8 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(req: NextRequest) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
   const body = await req.json();
   const {
     to,
