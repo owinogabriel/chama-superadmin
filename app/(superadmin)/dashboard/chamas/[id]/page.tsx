@@ -217,7 +217,7 @@ export default function ChamaDetailPage() {
           <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-5">
               <Users size={15} className="text-white/30" />
-              <h2 className="text-sm font-medium text-white">Chama Admin</h2>
+              <h2 className="text-sm font-medium text-white">Chama Vault</h2>
             </div>
 
             <div className="flex items-center gap-4 p-4 bg-white/[0.03] rounded-xl border border-white/[0.06] mb-5">
@@ -228,7 +228,7 @@ export default function ChamaDetailPage() {
               </div>
               <div>
                 <p className="text-white text-sm font-medium">{chama.profiles?.full_name ?? "—"}</p>
-                <p className="text-white/40 text-xs mt-0.5">Chama Admin</p>
+                <p className="text-white/40 text-xs mt-0.5">Chama Vault</p>
               </div>
               {chama.profiles?.status && (
                 <span className={`ml-auto flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${statusConfig[chama.profiles.status]?.class}`}>

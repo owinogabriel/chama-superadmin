@@ -123,7 +123,7 @@ export const LoginForm = () => {
             <span className="text-emerald-400 font-bold text-lg">C</span>
           </div>
           <CardTitle className="text-white text-xl">
-            Chama Admin Portal
+            Chama Vault Portal
           </CardTitle>
           <CardDescription className="text-white/40 text-sm">
             Sign in to manage your platform

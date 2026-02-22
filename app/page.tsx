@@ -86,20 +86,20 @@ export default function Welcome() {
           <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
             <span className="text-emerald-400 font-bold text-sm">C</span>
           </div>
-          <span className="text-white font-semibold text-sm tracking-wide">ChamaAdmin</span>
+          <span className="text-white font-semibold text-sm tracking-wide">ChamaVault</span>
         </div>
         <div className="flex items-center gap-3">
-          <button
+          {/* <button
             onClick={() => router.push("/login")}
             className="text-white/50 hover:text-white text-sm transition-colors px-4 py-2"
           >
             Sign In
-          </button>
+          </button> */}
           <button
             onClick={() => router.push("/login")}
             className="bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
           >
-            Get Started
+            Sign In
           </button>
         </div>
       </nav>
@@ -129,15 +129,15 @@ export default function Welcome() {
             onClick={() => router.push("/login")}
             className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-white font-medium px-8 py-3 rounded-xl transition-colors text-sm"
           >
-            Get Started
+           Sign In
             <ArrowRight size={16} />
           </button>
-          <button
+          {/* <button
             onClick={() => router.push("/login")}
             className="flex items-center justify-center gap-2 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] text-white/70 hover:text-white font-medium px-8 py-3 rounded-xl transition-colors text-sm"
           >
             Sign In
-          </button>
+          </button> */}
         </div>
 
         {/* Stats row */}
@@ -230,7 +230,7 @@ export default function Welcome() {
           <div className="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
             <span className="text-emerald-400 font-bold text-xs">C</span>
           </div>
-          <span className="text-white/40 text-xs">ChamaAdmin</span>
+          <span className="text-white/40 text-xs">ChamaVault</span>
         </div>
         <p className="text-white/25 text-xs">
           © 2026 Chama Management Platform. All rights reserved.

@@ -312,7 +312,7 @@ export default function CreateChamaPage() {
                 </div>
                 <div>
                   <h2 className="text-sm font-medium text-white">
-                    Chama Admin
+                    Chama Vault
                   </h2>
                   <p className="text-white/30 text-xs mt-0.5">
                     Login credentials will be sent to this person
