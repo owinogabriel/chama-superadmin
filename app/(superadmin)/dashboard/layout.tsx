@@ -2,7 +2,8 @@
 
 import { Sidebar } from "@/components/superadmin/Sidebar";
 import { supabase } from "@/lib/supabase/client";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
+
 import { useEffect } from "react";
 
 export default function DashboardLayout({
