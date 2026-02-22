@@ -1,3 +1,5 @@
+"use client"
+
 import { Sidebar } from "@/components/superadmin/Sidebar";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/router";
