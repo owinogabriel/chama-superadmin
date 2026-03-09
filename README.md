@@ -55,7 +55,7 @@ Use the credentials below to explore the dashboard:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/chama-hub.git  # Replace with your GitHub URL
+git clone [https://github.com](https://github.com/owinogabriel/chama-hub.git).  # Replace with your GitHub URL
 cd chama-hub
 
 # Install dependencies
